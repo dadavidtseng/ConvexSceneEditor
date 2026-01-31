@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- //////////////////////////////////////////////////////////////////////////////////////////////////// -->
+<!-- Game.vcxproj - Application(.exe) Project Configuration -->
+<!-- //////////////////////////////////////////////////////////////////////////////////////////////////// -->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- Project Configurations -->
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- Global Project Properties-->
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{1c6046c0-acfa-4ab7-b8d2-670ad463b3ef}</ProjectGuid>
+    <RootNamespace>Game</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>ConvexSceneEditor</ProjectName>
+  </PropertyGroup>
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- Module Configuration -->
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <PropertyGroup>
+    <V8LibPath>$(SolutionDir)../Engine/Code/ThirdParty/packages/v8-v143-x64.13.0.245.25/lib/$(Configuration)/</V8LibPath>
+    <V8RedistLibPath>$(SolutionDir)../Engine/Code/ThirdParty/packages/v8.redist-v143-x64.13.0.245.25/lib/$(Configuration)/</V8RedistLibPath>
+    <FmodLibPath>$(SolutionDir)../Engine/Code/ThirdParty/fmod/</FmodLibPath>
+    <!-- Module Configuration: Automatically synchronized with EngineBuildPreferences.hpp -->
+    <!-- Read header file content inline during property evaluation -->
+    <PreferencesFileContent>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\EngineBuildPreferences.hpp'))</PreferencesFileContent>
+    <!-- Detect ENGINE_DISABLE_SCRIPT: Check if file contains uncommented #define -->
+    <ScriptDisabled>false</ScriptDisabled>
+    <ScriptDisabled Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(PreferencesFileContent), '^\s*\#define\s+ENGINE_DISABLE_SCRIPT', RegexOptions.Multiline))">true</ScriptDisabled>
+    <!-- Detect ENGINE_DISABLE_AUDIO: Check if file contains uncommented #define -->
+    <AudioDisabled>false</AudioDisabled>
+    <AudioDisabled Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(PreferencesFileContent), '^\s*\#define\s+ENGINE_DISABLE_AUDIO', RegexOptions.Multiline))">true</AudioDisabled>
+    <!-- Set deployment flags (inverse of disable flags) -->
+    <EnableScriptModule Condition="'$(ScriptDisabled)'=='true'">false</EnableScriptModule>
+    <EnableScriptModule Condition="'$(ScriptDisabled)'=='false'">true</EnableScriptModule>
+    <EnableAudioModule Condition="'$(AudioDisabled)'=='true'">false</EnableAudioModule>
+    <EnableAudioModule Condition="'$(AudioDisabled)'=='false'">true</EnableAudioModule>
+  </PropertyGroup>
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- Display Module Configuration at Build Time -->
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <Target Name="ShowModuleConfiguration" BeforeTargets="Build">
+    <Message Text="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" Importance="high" />
+    <Message Text="Engine Module Configuration (from EngineBuildPreferences.hpp):" Importance="high" />
+    <Message Text="  ENGINE_DISABLE_SCRIPT: $(ScriptDisabled) → EnableScriptModule: $(EnableScriptModule)" Importance="high" />
+    <Message Text="  ENGINE_DISABLE_AUDIO:  $(AudioDisabled) → EnableAudioModule: $(EnableAudioModule)" Importance="high" />
+    <Message Text="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" Importance="high" />
+  </Target>
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- Configuration-Specific Properties -->
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- Debug Win32 Configuration -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <!-- Release Win32 Configuration -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <!-- Debug x64 Configuration -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <!-- Release x64 Configuration -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- MSBuild Imports-->
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <Import Project="$(VCTargetsPath)/Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)/Microsoft.Cpp.props" />
+  <!-- Property Sheets Integration -->
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)/Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)/Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)/Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)/Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)/Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)/Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)/Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)/Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)Temporary/$(ProjectName)_$(PlatformShortName)_$(Configuration)/</OutDir>
+    <IntDir>$(SolutionDir)Temporary/$(ProjectName)_$(PlatformShortName)_$(Configuration)/</IntDir>
+    <TargetName>$(ProjectName)_$(Configuration)_$(PlatformShortName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)Temporary/$(ProjectName)_$(PlatformShortName)_$(Configuration)/</OutDir>
+    <IntDir>$(SolutionDir)Temporary/$(ProjectName)_$(PlatformShortName)_$(Configuration)/</IntDir>
+    <TargetName>$(ProjectName)_$(Configuration)_$(PlatformShortName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)Temporary/$(ProjectName)_$(PlatformShortName)_$(Configuration)/</OutDir>
+    <IntDir>$(SolutionDir)Temporary/$(ProjectName)_$(PlatformShortName)_$(Configuration)/</IntDir>
+    <TargetName>$(ProjectName)_$(Configuration)_$(PlatformShortName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)Temporary/$(ProjectName)_$(PlatformShortName)_$(Configuration)/</OutDir>
+    <IntDir>$(SolutionDir)Temporary/$(ProjectName)_$(PlatformShortName)_$(Configuration)/</IntDir>
+    <TargetName>$(ProjectName)_$(Configuration)_$(PlatformShortName)</TargetName>
+  </PropertyGroup>
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- Compiler and linker configuration-->
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- Debug Win32 Configuration Settings -->
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="DebugWin32Settings">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/Zc:__cplusplus /std:c++20 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Code/;$(SolutionDir)../Engine/Code/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)Code/;$(SolutionDir)../Engine/Code/;$(SolutionDir)../Engine/Code/ThirdParty/openssl/lib/x64/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <!-- Windows API libraries required for game functionality -->
+      <!-- OpenSSL cryptography libraries (required for KADI authentication) -->
+      <AdditionalDependencies>libcrypto.lib;libssl.lib;winmm.lib;dbghelp.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <!-- Complete application deployment: executable + optional V8 and FMOD runtime DLLs -->
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='true' AND '$(EnableAudioModule)'=='true'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(V8RedistLibPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(FmodLibPath)fmod.dll" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName), V8 runtime, and FMOD x86 to game directory...</Message>
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='true' AND '$(EnableAudioModule)'=='false'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(V8RedistLibPath)" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName) and V8 runtime (no FMOD) to game directory...</Message>
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='false' AND '$(EnableAudioModule)'=='true'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(FmodLibPath)fmod.dll" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName) and FMOD x86 (no V8) to game directory...</Message>
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='false' AND '$(EnableAudioModule)'=='false'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName) only (no V8, no FMOD) to game directory...</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <!-- Release Win32 Configuration -->
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="ReleaseWin32Settings">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/Zc:__cplusplus /std:c++20 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Code/;$(SolutionDir)../Engine/Code/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)Code/;$(SolutionDir)../Engine/Code/;$(SolutionDir)../Engine/Code/ThirdParty/openssl/lib/x64/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <!-- Windows API libraries required for game functionality -->
+      <!-- OpenSSL cryptography libraries (required for KADI authentication) -->
+      <AdditionalDependencies>libcrypto.lib;libssl.lib;winmm.lib;dbghelp.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <!-- Complete application deployment: executable + optional V8 and FMOD runtime DLLs -->
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='true' AND '$(EnableAudioModule)'=='true'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(V8RedistLibPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(FmodLibPath)fmod.dll" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName), V8 runtime, and FMOD x86 to game directory...</Message>
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='true' AND '$(EnableAudioModule)'=='false'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(V8RedistLibPath)" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName) and V8 runtime (no FMOD) to game directory...</Message>
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='false' AND '$(EnableAudioModule)'=='true'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(FmodLibPath)fmod.dll" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName) and FMOD x86 (no V8) to game directory...</Message>
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='false' AND '$(EnableAudioModule)'=='false'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName) only (no V8, no FMOD) to game directory...</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <!-- Debug x64 Configuration -->
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="DebugX64Settings">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/Zc:__cplusplus /std:c++20 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Code/;$(SolutionDir)../Engine/Code/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)Code/;$(SolutionDir)../Engine/Code/;$(SolutionDir)../Engine/Code/ThirdParty/openssl/lib/x64/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <!-- Windows API libraries required for game functionality -->
+      <!-- OpenSSL cryptography libraries (required for KADI authentication) -->
+      <AdditionalDependencies>libcrypto.lib;libssl.lib;winmm.lib;dbghelp.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <!-- Complete application deployment: executable + optional V8 and FMOD runtime DLLs -->
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='true' AND '$(EnableAudioModule)'=='true'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(V8RedistLibPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(FmodLibPath)fmod64.dll" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName), V8 runtime, and FMOD x64 to game directory...</Message>
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='true' AND '$(EnableAudioModule)'=='false'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(V8RedistLibPath)" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName) and V8 runtime (no FMOD) to game directory...</Message>
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='false' AND '$(EnableAudioModule)'=='true'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(FmodLibPath)fmod64.dll" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName) and FMOD x64 (no V8) to game directory...</Message>
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='false' AND '$(EnableAudioModule)'=='false'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName) only (no V8, no FMOD) to game directory...</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <!-- Release x64 Configuration -->
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="ReleaseX64Settings">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/Zc:__cplusplus /std:c++20 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Code/;$(SolutionDir)../Engine/Code/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)Code/;$(SolutionDir)../Engine/Code/;$(SolutionDir)../Engine/Code/ThirdParty/openssl/lib/x64/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <!-- Windows API libraries required for game functionality -->
+      <!-- OpenSSL cryptography libraries (required for KADI authentication) -->
+      <AdditionalDependencies>libcrypto.lib;libssl.lib;winmm.lib;dbghelp.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <!-- Complete application deployment: executable + optional V8 and FMOD runtime DLLs -->
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='true' AND '$(EnableAudioModule)'=='true'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(V8RedistLibPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(FmodLibPath)fmod64.dll" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName), V8 runtime, and FMOD x64 to game directory...</Message>
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='true' AND '$(EnableAudioModule)'=='false'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(V8RedistLibPath)" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName) and V8 runtime (no FMOD) to game directory...</Message>
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='false' AND '$(EnableAudioModule)'=='true'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/" &amp; xcopy /Y /F "$(FmodLibPath)fmod64.dll" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName) and FMOD x64 (no V8) to game directory...</Message>
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(EnableScriptModule)'=='false' AND '$(EnableAudioModule)'=='false'">
+      <Command>xcopy /Y /F /I "$(TargetPath)" "$(SolutionDir)Run/"</Command>
+      <Message>Deploying $(TargetFileName) only (no V8, no FMOD) to game directory...</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- Project Dependencies -->
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- Engine static library provides all core functionality and V8 integration -->
+  <ItemGroup>
+    <ProjectReference Include="../../../Engine/Code/Engine/Engine.vcxproj">
+      <Project>{d80656f3-b024-489f-b7b3-8bf35b25c423}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- Source Files -->
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <ItemGroup>
+    <ClCompile Include="Framework/App.cpp" />
+    <ClCompile Include="Framework/GameCommon.cpp" />
+    <ClCompile Include="Framework/Main_Windows.cpp" />
+    <ClCompile Include="Gameplay/Game.cpp" />
+  </ItemGroup>
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- Header Files -->
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <ItemGroup>
+    <ClInclude Include="EngineBuildPreferences.hpp" />
+    <ClInclude Include="Framework/App.hpp" />
+    <ClInclude Include="Framework/GameCommon.hpp" />
+    <ClInclude Include="Gameplay/Game.hpp" />
+  </ItemGroup>
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- Documentation -->
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <ItemGroup>
+    <None Include="../../Docs/README.md" />
+  </ItemGroup>
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <!-- MSBuild Target and Build Validation -->
+  <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
+  <Import Project="$(VCTargetsPath)/Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <!-- Custom Build Information Target -->
+  <Target Name="ShowBuildInfo" BeforeTargets="Build">
+    <Message Text="Building $(ProjectName) Game Application - Configuration | $(Configuration), Platform | $(Platform)" Importance="high" />
+    <Message Text="Output: $(TargetPath)" Importance="normal" />
+    <Message Text="Working Directory: $(LocalDebuggerWorkingDirectory)" Importance="normal" />
+    <Message Text="V8 Runtime will be deployed from: $(V8RedistLibPath)" Importance="normal" />
+  </Target>
+</Project>
