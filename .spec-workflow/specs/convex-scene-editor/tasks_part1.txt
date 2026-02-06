@@ -1,0 +1,46 @@
+# Tasks: Convex Scene Editor
+
+## Implementation Tasks
+
+- [ ] 1. Implement Convex2 class basic structure
+  - Files: Code/Game/Convex.hpp, Code/Game/Convex.cpp
+  - Create Convex2 class with dual representation (ConvexHull2 and ConvexPoly2)
+  - Add constructors for different input types (vertices, ConvexPoly2, ConvexHull2)
+  - Implement bounding volume calculation (AABB and bounding disc)
+  - Add basic transform methods (Translate, Rotate, Scale)
+  - _Leverage: Engine/Math/ConvexHull2.hpp, Engine/Math/ConvexPoly2.hpp, Engine/Math/AABB2.hpp, Engine/Math/Vec2.hpp_
+  - _Requirements: All requirements (core convex representation)_
+  - _Prompt: Implement the task for spec convex-scene-editor, first run spec-workflow-guide to get the workflow guide then implement the task: Role: C++ Game Engine Developer with expertise in computational geometry and data structures | Task: Create the Convex2 class with dual representation (plane-based ConvexHull2 and vertex-based ConvexPoly2) following the design document, implementing constructors for different input types and bounding volume calculations | Restrictions: Must maintain const correctness, use RAII for resource management, follow existing engine math library patterns, do not modify engine code | _Leverage: Reuse existing ConvexHull2, ConvexPoly2, AABB2, Vec2 classes from Engine/Math/ | Success: Convex2 class compiles without errors, all constructors properly initialize dual representations, bounding volumes (AABB and disc) are correctly calculated, transform methods work correctly. After completing implementation, use log-implementation tool to record details with artifacts (classes created, methods implemented), then mark task as [x] in tasks.md_
+
+- [ ] 2. Implement Convex2 raycast methods
+  - Files: Code/Game/Convex.cpp, Code/Game/Convex.hpp
+  - Implement RayCastVsConvex2D with optimization options (disc/box rejection)
+  - Implement IsPointInside method using convex hull
+  - Integrate with engine's RaycastVsConvexHull2D utility
+  - Add RebuildBoundingBox method
+  - _Leverage: Engine/Math/RaycastUtils.hpp (RaycastVsConvexHull2D, RaycastVsDisc2D, RaycastVsAABB2D), Engine/Math/MathUtils.hpp (IsPointInsideConvexHull2D)_
+  - _Requirements: All requirements (raycast performance testing)_
+  - _Prompt: Implement the task for spec convex-scene-editor, first run spec-workflow-guide to get the workflow guide then implement the task: Role: C++ Developer specializing in ray-casting algorithms and computational geometry | Task: Implement raycast functionality for Convex2 class with broad-phase optimization options (disc rejection and AABB rejection) following the design document's algorithm specifications | Restrictions: Must use existing engine raycast utilities, implement proper early-exit optimizations, maintain numerical stability with EPSILON comparisons, do not duplicate engine functionality | _Leverage: Use RaycastVsConvexHull2D for narrow-phase, RaycastVsDisc2D and RaycastVsAABB2D for broad-phase culling | Success: Raycast correctly detects hits and misses, disc rejection optimization reduces unnecessary tests, box rejection optimization works, point-in-polygon test is accurate, numerical edge cases handled properly. After completing implementation, use log-implementation tool to record details with artifacts (functions implemented with signatures and locations), then mark task as [x] in tasks.md_
+
+- [ ] 3. Implement random convex generation
+  - Files: Code/Game/Gameplay/Game.cpp, Code/Game/Gameplay/Game.hpp
+  - Implement GenerateRandomConvex(int index) method
+  - Use noise functions for deterministic generation
+  - Generate 3-8 vertices with bias against 7-8
+  - Use polar coordinates with evenly distributed angles + random offset
+  - Set bounding volumes (disc center, radius, AABB)
+  - _Leverage: Engine/Math/RandomNumberGenerator.hpp, Engine/Core/NoiseUtils.hpp (Get1dNoiseUint, Get1dNoiseZeroToOne, Get2dNoiseZeroToOne), Engine/Math/Vec2.hpp (MakeFromPolarDegrees)_
+  - _Requirements: All requirements (scene generation)_
+  - _Prompt: Implement the task for spec convex-scene-editor, first run spec-workflow-guide to get the workflow guide then implement the task: Role: C++ Game Developer with expertise in procedural generation and noise functions | Task: Implement deterministic random convex polygon generation using noise functions, generating 3-8 vertices in polar coordinates with evenly distributed angles plus random offsets to ensure convexity | Restrictions: Must use noise functions (not random), ensure same seed produces same results, bias against 7-8 vertices (re-roll once), ensure all shapes fit within world bounds, angles must be in CCW order | _Leverage: Use Get1dNoiseUint for vertex count, Get1dNoiseZeroToOne for radius and position, Get2dNoiseZeroToOne for angle offsets, Vec2::MakeFromPolarDegrees for vertex generation | Success: Generated convexes are always valid (3-8 vertices), same seed produces identical results, all shapes are convex (no concave angles), shapes fit within world bounds, bounding volumes are correctly set. After completing implementation, use log-implementation tool to record details with artifacts (functions implemented), then mark task as [x] in tasks.md_
+
+- [ ] 4. Implement scene initialization and management
+  - Files: Code/Game/Gameplay/Game.cpp, Code/Game/Gameplay/Game.hpp
+  - Add member variables for convex array, spatial structures, performance metrics
+  - Initialize RandomNumberGenerator with seed
+  - Implement scene generation (default 256 objects)
+  - Implement RebuildAllTrees method
+  - Set up world bounds (200x100 units)
+  - _Leverage: Engine/Math/RandomNumberGenerator.hpp, Code/Game/Convex.hpp, Code/Game/BVH.hpp, Code/Game/QuadTree.hpp_
+  - _Requirements: All requirements (scene management)_
+  - _Prompt: Implement the task for spec convex-scene-editor, first run spec-workflow-guide to get the workflow guide then implement the task: Role: C++ Game Developer with expertise in scene management and memory management | Task: Set up scene data structures and initialization in Game class, implementing scene generation with configurable object count and spatial structure rebuild functionality | Restrictions: Must use manual memory management (new/delete), initialize all member variables properly, ensure no memory leaks, follow existing Game class patterns | _Leverage: Use RandomNumberGenerator for deterministic generation, Convex2 from task 1-2, AABB2Tree from task 12-13, SymmetricQuadTree from task 14-15 | Success: Scene generates with correct number of objects, spatial structures build successfully on initialization, no memory leaks on initialization or cleanup, world bounds are correctly set (200x100), RebuildAllTrees clears and rebuilds both spatial structures correctly. After completing implementation, use log-implementation tool to record details with artifacts (functions and member variables added), then mark task as [x] in tasks.md_
+
