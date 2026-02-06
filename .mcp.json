@@ -13,8 +13,10 @@
       }
     },
     "spec-workflow-ConvexSceneEditor": {
-      "command": "npx",
+      "command": "cmd",
       "args": [
+        "/c",
+        "npx",
         "-y",
         "@pimzino/spec-workflow-mcp@latest"
       ]
