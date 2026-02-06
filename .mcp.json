@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "shrimp-ConvexSceneEditor": {
+      "command": "node",
+      "args": [
+        "C:\\GitHub-Reference\\mcp-shrimp-task-manager\\dist\\index.js"
+      ],
+      "env": {
+        "DATA_DIR": "C:\\GitHub\\ConvexSceneEditor\\.claude\\shrimp_data",
+        "TEMPLATES_USE": "en",
+        "ENABLE_GUI": "true",
+        "WEB_PORT": "3000"
+      }
+    },
+    "spec-workflow-ConvexSceneEditor": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@pimzino/spec-workflow-mcp@latest"
+      ]
+    }
+  }
+}

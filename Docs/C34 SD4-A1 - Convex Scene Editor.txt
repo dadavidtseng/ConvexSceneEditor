@@ -1,0 +1,45 @@
+SD4 Assignment 1: Convex Scene Editor
+1. (3 points) Create a new project cloned from Protogame2D: ConvexSceneEditor.
+2. (10 points) Show a simple 2D scene composed of N (initially 8, say) random static (non-moving) convex objects.
+3. (5) Two different basic draw modes (toggleable with F2 or similar):
+a. Objects are drawn with translucent fill and thick opaque edges;
+b. (default) All object edges are drawn (thick, opaque, dark) first, then all object interiors are drawn second (opaque, light) creating the appearance of a composite concave shape(s) where multiple objects overlap.
+4. (12) One visible raycast is drawn showing ray, impact position, and surface normal drawn nicely using 2D arrows.
+5. (15) When the user hits the ‘T’ key, M (initially M=1024) invisible random raycasts (each from a random position in the scene to another random position within the scene) all fire.  The current time is measured immediately before and after this loop of raycasts and the elapsed time is displayed on the screen afterwards.
+6. (6) When only 1 object is present, draw convex hull planes and ray intercept and test points, color-coded by status/rejection.
+7. (5) One object (at most) that the mouse position is inside of is highlighted as the “current” object
+8. (4) While an object is highlighted, the highlight never changes to another object; always keep the current object.
+9. (12) Implementation of at least one spatial hashing and/or partitioning scheme (BSP, BVH, bit-buckets, etc.)
+10. (12) Keyboard / mouse shortcuts for each of the following, all displayed in-app / onscreen:
+a. Hold ‘S’ or LMB to snap (drag) the visible raycast Start to the mouse position; hold ‘E’ or RMB to snap (drag) the raycast End to the mouse.
+b. Keys (default: ‘Y’ and ‘U’) to hit to double and halve (minimum 1) the number of static scene objects
+c. Keys (default: ‘M’ and ‘N’) to hit to double and halve (minimum 1) the number of invisible raycasts that will be executed when the ‘T’ key is pressed (see above requirement).
+d. Keys (default: ‘W’ and ‘R’, or ‘Q’ and ‘E’) to hold to rotate (clockwise and CCW) the current object pointed-at, rotated around the mouse cursor position
+e. Keys (default: ‘K’ and ‘L’) to hold to uniformly scale (deflate/inflate) the current object pointed-at, scaled around the mouse cursor position
+f. Left mouse click-and-drag to drag the current object around;
+i. Object should not “snap to” cursor; preserve object’s relative offset from grabbed position
+ii. Object should not “lose focus” when dragging past/over others; “current” object is locked
+iii. Only works if there was a “current” object at start of drag (LMB-down); otherwise, does nothing
+g. Key (default F8) to re-randomize all shapes & rebuild the entire scene (keeping the current shape count)
+h. Key (default F1) to toggle the debug draw of each object’s own bounding disc
+i. Key (default F4) to toggle the debug draw of your spatial hashing and/or partitioning scheme(s)
+j. Key (default F9) to cycle between different combinations of enabling/disabling your narrow-phase ray-disc optimization and/or your other spatial/partitioning scheme optimization(s)
+k. Key/mouse controls may vary from these, but must be documented clearly onscreen AND in ReadMe
+11. (6) Metrics / variables also displayed onscreen:
+a. Number of objects, number of invisible raycasts to use when ‘T’ is next pressed, partitioning scheme name (or None), FPS, and the total amount of time (in milliseconds) to perform all of the invisible raycasts from the last time ‘T’ was pressed.
+12. (10) A clear and succinct (but not academic-formal) summary of findings (in ReadMe.txt):
+a. How many raycasts/ms can you do vs. 16 objects?  256?  1024?
+b. How does this improve (or worsen!) when you enable the early ray-disc rejection test?
+c. How does this improve (or worsen!) when you enable your chosen hashing/partitioning scheme?
+d. How do speeds compare in each build config (Debug/Release, and ideally also DebugInline, FastBreak)?
+e. Any general trends you can observe, i.e. the speed seems to be O(N) or O(N2) with #objects, etc.
+f. Any data specific to your hashing/partitioning scheme you can observe (e.g. AABB Tree depth)
+g. Anything else interesting you observe about your results
+h. All speed measurements (other than cross-build comparisons) are taken in Release builds
+Submission
+* Use your own Guildhall “SD” C++ engine – maintained, buddy-tested, and submitted via Perforce.
+o A committed changelist in P4 with submission comment “SD4-A1: COMPLETE”.
+o Be sure to include an updated ReadMe, a current Release-built .EXE, and all required code & data files.
+* Submit a .zip file to Canvas named C34_SD4_A1_yourP4username.zip which contains:
+o A very short (informal) voice-narrated video demonstrating the full functionality of your project;
+o A copy of this document, with completed items highlighted cyan, omitted items highlighted red, and partially completed items highlighted yellow (with inserted bullets-text underneath explaining).

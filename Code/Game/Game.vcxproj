@@ -323,6 +323,7 @@
     <ClCompile Include="Framework/GameCommon.cpp" />
     <ClCompile Include="Framework/Main_Windows.cpp" />
     <ClCompile Include="Gameplay/Game.cpp" />
+    <ClCompile Include="Gameplay\Convex.cpp" />
   </ItemGroup>
   <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
   <!-- Header Files -->
@@ -332,6 +333,7 @@
     <ClInclude Include="Framework/App.hpp" />
     <ClInclude Include="Framework/GameCommon.hpp" />
     <ClInclude Include="Gameplay/Game.hpp" />
+    <ClInclude Include="Gameplay\Convex.hpp" />
   </ItemGroup>
   <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
   <!-- Documentation -->
