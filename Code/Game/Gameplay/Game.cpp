@@ -8,6 +8,8 @@
 #include "Game/Framework/App.hpp"
 #include "Game/Framework/GameCommon.hpp"
 #include "Game/Gameplay/Convex.hpp"
+#include "Game/Gameplay/BVH.hpp"
+#include "Game/Gameplay/QuadTree.hpp"
 //----------------------------------------------------------------------------------------------------
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Core/Clock.hpp"
@@ -18,8 +20,14 @@
 #include "Engine/Math/RandomNumberGenerator.hpp"
 #include "Engine/Platform/Window.hpp"
 #include "Engine/Renderer/DebugRenderSystem.hpp"
+#include "Engine/Renderer/VertexUtils.hpp"
+#include "Engine/Core/StringUtils.hpp"
+#include "Engine/Core/Time.hpp"
+#include "Engine/Core/ErrorWarningAssert.hpp"
+#include "Engine/Math/RaycastUtils.hpp"
 //----------------------------------------------------------------------------------------------------
 #include <algorithm>
+#include <cfloat>
 
 //----------------------------------------------------------------------------------------------------
 // Constants
@@ -28,7 +36,7 @@ constexpr float WORLD_SIZE_X = 200.f;
 constexpr float WORLD_SIZE_Y = 100.f;
 constexpr float MIN_CONVEX_RADIUS = 2.f;
 constexpr float MAX_CONVEX_RADIUS = 8.f;
-constexpr int INITIAL_CONVEX_COUNT = 8;
+constexpr int   INITIAL_CONVEX_COUNT = 8;
 
 //----------------------------------------------------------------------------------------------------
 Game::Game()
@@ -61,9 +69,18 @@ Game::Game()
         m_convexes.push_back(convex);
     }
 
-    // Initialize ray positions
-    m_rayStart = Vec2(WORLD_SIZE_X * 0.5f, WORLD_SIZE_Y * 0.5f);
-    m_rayEnd = Vec2(WORLD_SIZE_X * 0.75f, WORLD_SIZE_Y * 0.75f);
+    // Initialize ray with random start/end points
+    m_rayStart = Vec2(
+        g_rng->RollRandomFloatInRange(0.f, WORLD_SIZE_X),
+        g_rng->RollRandomFloatInRange(0.f, WORLD_SIZE_Y)
+    );
+    m_rayEnd = Vec2(
+        g_rng->RollRandomFloatInRange(0.f, WORLD_SIZE_X),
+        g_rng->RollRandomFloatInRange(0.f, WORLD_SIZE_Y)
+    );
+
+    // Build spatial acceleration structures for initial convexes
+    RebuildAllTrees();
 
     DAEMON_LOG(LogGame, eLogVerbosity::Display, "(Game)(end)");
 }
@@ -91,9 +108,30 @@ Game::~Game()
 void Game::Update()
 {
     Vec2 const      screenTopLeft = m_screenCamera->GetOrthographicTopLeft();
-    float constexpr textHeight    = 20.f;
+    float constexpr textHeight    = 15.f;
+    int             lineIndex     = 1;
 
-    DebugAddScreenText(Stringf("Time: %.2f FPS: %.2f Scale: %.1f", m_gameClock->GetTotalSeconds(), 1.f / m_gameClock->GetDeltaSeconds(), m_gameClock->GetTimeScale()), screenTopLeft - Vec2(0.f, textHeight), textHeight, Vec2(1, 1), 0.f);
+    DebugAddScreenText(Stringf("Time: %.2f FPS: %.2f Scale: %.1f", m_gameClock->GetTotalSeconds(), 1.f / m_gameClock->GetDeltaSeconds(), m_gameClock->GetTimeScale()), screenTopLeft - Vec2(0.f, textHeight * static_cast<float>(lineIndex)), textHeight, Vec2(1, 1), 0.f);
+    ++lineIndex;
+
+    DebugAddScreenText(Stringf("LMB/RMB=RayStart/End, W/R=Rotate, L/K=Scale, F1=Discs, F3=BVH, F4=AABB, F2=DrawMode, F8=Randomize"), screenTopLeft - Vec2(0.f, textHeight * static_cast<float>(lineIndex)), textHeight, Vec2(1, 1), 0.f);
+    ++lineIndex;
+
+    DebugAddScreenText(Stringf("%d convex shapes (Y/U to double/halve); T=Test with %d random rays (M/N to double/halve)", static_cast<int>(m_convexes.size()), m_numOfRandomRays), screenTopLeft - Vec2(0.f, textHeight * static_cast<float>(lineIndex)), textHeight, Vec2(1, 1), 0.f);
+    ++lineIndex;
+
+    if (m_avgDist != 0.f)
+    {
+        DebugAddScreenText(Stringf("%d Rays Vs. %d objects: avg dist %.3f", m_numOfRandomRays, static_cast<int>(m_convexes.size()), m_avgDist), screenTopLeft - Vec2(0.f, textHeight * static_cast<float>(lineIndex)), textHeight, Vec2(1, 1), 0.f, Rgba8::YELLOW, Rgba8::YELLOW);
+        ++lineIndex;
+
+        DebugAddScreenText(Stringf("No Opt: %.2fms  Disc: %.2fms  AABB: %.2fms", m_lastRayTestNormalTime, m_lastRayTestDiscRejectionTime, m_lastRayTestAABBRejectionTime), screenTopLeft - Vec2(0.f, textHeight * static_cast<float>(lineIndex)), textHeight, Vec2(1, 1), 0.f, Rgba8::YELLOW, Rgba8::YELLOW);
+        ++lineIndex;
+
+        DebugAddScreenText(Stringf("QuadTree: %.2fms  BVH: %.2fms", m_lastRayTestSymmetricTreeTime, m_lastRayTestAABBTreeTime), screenTopLeft - Vec2(0.f, textHeight * static_cast<float>(lineIndex)), textHeight, Vec2(1, 1), 0.f, Rgba8::YELLOW, Rgba8::YELLOW);
+        ++lineIndex;
+    }
+
     UpdateGame();
     UpdateTime();
     UpdateWindow();
@@ -268,6 +306,16 @@ void Game::UpdateGame()
         // Update hover detection (skipped during drag for sticky focus)
         UpdateHoverDetection();
 
+        // Update ray endpoints via mouse buttons or keyboard
+        if (g_input->IsKeyDown(KEYCODE_LEFT_MOUSE))
+        {
+            m_rayStart = cursorPos;
+        }
+        if (g_input->IsKeyDown(KEYCODE_RIGHT_MOUSE))
+        {
+            m_rayEnd = cursorPos;
+        }
+
         if (g_input->WasKeyJustPressed(KEYCODE_ESC))
         {
             SetGameState(eGameState::ATTRACT);
@@ -276,9 +324,21 @@ void Game::UpdateGame()
         {
             g_app->DeleteAndCreateNewGame();
         }
+        else if (g_input->WasKeyJustPressed(KEYCODE_F1))
+        {
+            m_showBoundingDiscs = !m_showBoundingDiscs;
+        }
         else if (g_input->WasKeyJustPressed(KEYCODE_F2))
         {
             m_drawEdgesMode = !m_drawEdgesMode;
+        }
+        else if (g_input->WasKeyJustPressed(KEYCODE_F3))
+        {
+            m_debugDrawBVHMode = !m_debugDrawBVHMode;
+        }
+        else if (g_input->WasKeyJustPressed(KEYCODE_F4))
+        {
+            m_showSpatialStructure = !m_showSpatialStructure;
         }
         else if (g_input->WasKeyJustPressed('C'))
         {
@@ -349,6 +409,10 @@ void Game::UpdateGame()
             {
                 m_numOfRandomRays = 1;
             }
+        }
+        else if (g_input->WasKeyJustPressed('T'))
+        {
+            TestRays();
         }
     }
 }
@@ -462,6 +526,58 @@ void Game::RenderGame() const
         }
     }
 
+    // Debug visualization: bounding discs (F1)
+    if (m_showBoundingDiscs)
+    {
+        for (Convex2 const* convex : m_convexes)
+        {
+            AddVertsForDisc2D(verts, convex->m_boundingDiscCenter, convex->m_boundingRadius, 0.3f, Rgba8(0, 255, 0, 128));
+        }
+    }
+
+    // Debug visualization: per-object bounding volumes (F4)
+    if (m_showSpatialStructure)
+    {
+        for (Convex2 const* convex : m_convexes)
+        {
+            DebugDrawRing(convex->m_boundingDiscCenter, convex->m_boundingRadius, 0.3f, Rgba8(100, 100, 100, 160));
+            AABB2 const& box = convex->m_boundingAABB;
+            DebugDrawLine(box.m_mins, Vec2(box.m_mins.x, box.m_maxs.y), 0.3f, Rgba8(100, 100, 100, 160));
+            DebugDrawLine(Vec2(box.m_mins.x, box.m_maxs.y), box.m_maxs, 0.3f, Rgba8(100, 100, 100, 160));
+            DebugDrawLine(Vec2(box.m_maxs.x, box.m_mins.y), box.m_maxs, 0.3f, Rgba8(100, 100, 100, 160));
+            DebugDrawLine(Vec2(box.m_maxs.x, box.m_mins.y), box.m_mins, 0.3f, Rgba8(100, 100, 100, 160));
+        }
+    }
+
+    // Debug visualization: BVH tree node bounds (F3)
+    if (m_debugDrawBVHMode)
+    {
+        for (auto const& node : m_AABB2Tree.m_nodes)
+        {
+            AABB2 const& box = node.m_bounds;
+            DebugDrawLine(box.m_mins, Vec2(box.m_mins.x, box.m_maxs.y), 0.3f, Rgba8(100, 100, 100, 160));
+            DebugDrawLine(Vec2(box.m_mins.x, box.m_maxs.y), box.m_maxs, 0.3f, Rgba8(100, 100, 100, 160));
+            DebugDrawLine(Vec2(box.m_maxs.x, box.m_mins.y), box.m_maxs, 0.3f, Rgba8(100, 100, 100, 160));
+            DebugDrawLine(Vec2(box.m_maxs.x, box.m_mins.y), box.m_mins, 0.3f, Rgba8(100, 100, 100, 160));
+        }
+    }
+
+    // Single object mode: show convex hull planes as arrows
+    if (m_convexes.size() == 1)
+    {
+        Convex2 const* convex = m_convexes[0];
+        ConvexHull2 const& hull = convex->m_convexHull;
+        for (Plane2 const& plane : hull.m_boundingPlanes)
+        {
+            Vec2 pointOnPlane = plane.m_normal * plane.m_distanceFromOrigin;
+            Vec2 arrowEnd = pointOnPlane + plane.m_normal * 3.f;
+            AddVertsForArrow2D(verts, pointOnPlane, arrowEnd, 1.f, 0.3f, Rgba8(255, 255, 0));
+        }
+    }
+    
+    // Raycast visualization (always visible)
+    RenderRaycast(verts);
+    
     g_renderer->SetModelConstants();
     g_renderer->SetBlendMode(eBlendMode::OPAQUE);
     g_renderer->SetRasterizerMode(eRasterizerMode::SOLID_CULL_BACK);
@@ -483,6 +599,53 @@ void Game::AddVertsForConvexPolyEdges(std::vector<Vertex_PCU>& verts, ConvexPoly
         Vec2 const& start = points[i];
         Vec2 const& end = points[(i + 1) % numPoints];
         AddVertsForLineSegment2D(verts, start, end, thickness, false, color);
+    }
+}
+
+//----------------------------------------------------------------------------------------------------
+void Game::RenderRaycast(std::vector<Vertex_PCU>& verts) const
+{
+    float constexpr rayThickness    = 0.3f;
+    float constexpr normalLength    = 3.f;
+    float constexpr normalThickness = 0.3f;
+    float constexpr normalArrowSize = 1.f;
+
+    // Compute ray direction and length dynamically from start/end points
+    float rayMaxLength = (m_rayEnd - m_rayStart).GetLength();
+    if (rayMaxLength < 0.001f)
+    {
+        return; // Degenerate ray
+    }
+    Vec2 rayNormal = (m_rayEnd - m_rayStart) / rayMaxLength;
+
+    // Find closest raycast hit across all convexes
+    RaycastResult2D closestResult;
+    closestResult.m_didImpact = false;
+
+    for (Convex2* convex : m_convexes)
+    {
+        RaycastResult2D result;
+        bool didHit = convex->RayCastVsConvex2D(result, m_rayStart, rayNormal, rayMaxLength);
+        if (didHit && (!closestResult.m_didImpact || result.m_impactLength < closestResult.m_impactLength))
+        {
+            closestResult = result;
+        }
+    }
+
+    // Always draw the full ray arrow (black, behind everything)
+    AddVertsForArrow2D(verts, m_rayStart, m_rayEnd, normalArrowSize, rayThickness, Rgba8(0, 0, 0));
+
+    if (closestResult.m_didImpact)
+    {
+        Vec2 const& impactPos = closestResult.m_impactPosition;
+        Vec2 const& impactNormal = closestResult.m_impactNormal;
+
+        // Green segment from start to impact (drawn on top of black arrow)
+        AddVertsForLineSegment2D(verts, m_rayStart, impactPos, rayThickness, false, Rgba8(0, 255, 0));
+
+        // Red impact normal arrow
+        Vec2 normalEnd = impactPos + impactNormal * normalLength;
+        AddVertsForArrow2D(verts, impactPos, normalEnd, normalArrowSize, normalThickness, Rgba8(255, 0, 0));
     }
 }
 
@@ -520,9 +683,198 @@ Convex2* Game::CreateRandomConvex(Vec2 const& center, float minRadius, float max
 }
 
 //----------------------------------------------------------------------------------------------------
+void Game::TestRays()
+{
+    RebuildAllTrees();
+
+    int numRays = m_numOfRandomRays;
+
+    // Generate random rays
+    std::vector<Vec2> rayStartPos(numRays);
+    std::vector<Vec2> rayForwardNormal(numRays);
+    std::vector<float> rayMaxDist(numRays);
+
+    AABB2 worldBounds(Vec2(0.f, 0.f), Vec2(WORLD_SIZE_X, WORLD_SIZE_Y));
+    for (int j = 0; j < numRays; ++j)
+    {
+        Vec2 p1(g_rng->RollRandomFloatInRange(worldBounds.m_mins.x, worldBounds.m_maxs.x),
+                g_rng->RollRandomFloatInRange(worldBounds.m_mins.y, worldBounds.m_maxs.y));
+        Vec2 p2(g_rng->RollRandomFloatInRange(worldBounds.m_mins.x, worldBounds.m_maxs.x),
+                g_rng->RollRandomFloatInRange(worldBounds.m_mins.y, worldBounds.m_maxs.y));
+        rayStartPos[j] = p1;
+        Vec2 disp = p2 - p1;
+        rayMaxDist[j] = disp.GetLength();
+        rayForwardNormal[j] = disp.GetNormalized();
+    }
+
+    RaycastResult2D rayRes;
+    double startTime = 0.0;
+    double endTime = 0.0;
+    float sumDist = 0.f;
+    int numOfRayHit = 0;
+    int correctNumOfRayHit = 0;
+    float thisAvgDist = 0.f;
+
+    // Mode 1: No optimization (baseline)
+    sumDist = 0.f;
+    numOfRayHit = 0;
+    startTime = GetCurrentTimeSeconds();
+    for (int j = 0; j < numRays; ++j)
+    {
+        float minDist = FLT_MAX;
+        for (int i = 0; i < static_cast<int>(m_convexes.size()); ++i)
+        {
+            if (m_convexes[i]->RayCastVsConvex2D(rayRes, rayStartPos[j], rayForwardNormal[j], rayMaxDist[j], false, false))
+            {
+                if (rayRes.m_impactLength < minDist)
+                {
+                    minDist = rayRes.m_impactLength;
+                }
+            }
+        }
+        if (minDist != FLT_MAX)
+        {
+            sumDist += minDist;
+            ++numOfRayHit;
+        }
+    }
+    endTime = GetCurrentTimeSeconds();
+    m_avgDist = sumDist / static_cast<float>(numOfRayHit);
+    correctNumOfRayHit = numOfRayHit;
+    m_lastRayTestNormalTime = static_cast<float>((endTime - startTime) * 1000.0);
+
+    // Mode 2: Disc rejection
+    sumDist = 0.f;
+    numOfRayHit = 0;
+    startTime = GetCurrentTimeSeconds();
+    for (int j = 0; j < numRays; ++j)
+    {
+        float minDist = FLT_MAX;
+        for (int i = 0; i < static_cast<int>(m_convexes.size()); ++i)
+        {
+            if (m_convexes[i]->RayCastVsConvex2D(rayRes, rayStartPos[j], rayForwardNormal[j], rayMaxDist[j], true, false))
+            {
+                if (rayRes.m_impactLength < minDist)
+                {
+                    minDist = rayRes.m_impactLength;
+                }
+            }
+        }
+        if (minDist != FLT_MAX)
+        {
+            sumDist += minDist;
+            ++numOfRayHit;
+        }
+    }
+    endTime = GetCurrentTimeSeconds();
+    thisAvgDist = sumDist / static_cast<float>(numOfRayHit);
+    GUARANTEE_OR_DIE(numOfRayHit == correctNumOfRayHit, "Disc rejection mismatch");
+    m_lastRayTestDiscRejectionTime = static_cast<float>((endTime - startTime) * 1000.0);
+
+    // Mode 3: AABB rejection
+    sumDist = 0.f;
+    numOfRayHit = 0;
+    startTime = GetCurrentTimeSeconds();
+    for (int j = 0; j < numRays; ++j)
+    {
+        float minDist = FLT_MAX;
+        for (int i = 0; i < static_cast<int>(m_convexes.size()); ++i)
+        {
+            if (m_convexes[i]->RayCastVsConvex2D(rayRes, rayStartPos[j], rayForwardNormal[j], rayMaxDist[j], true, true))
+            {
+                if (rayRes.m_impactLength < minDist)
+                {
+                    minDist = rayRes.m_impactLength;
+                }
+            }
+        }
+        if (minDist != FLT_MAX)
+        {
+            sumDist += minDist;
+            ++numOfRayHit;
+        }
+    }
+    endTime = GetCurrentTimeSeconds();
+    thisAvgDist = sumDist / static_cast<float>(numOfRayHit);
+    GUARANTEE_OR_DIE(numOfRayHit == correctNumOfRayHit, "AABB rejection mismatch");
+    m_lastRayTestAABBRejectionTime = static_cast<float>((endTime - startTime) * 1000.0);
+
+    // Mode 4: QuadTree
+    sumDist = 0.f;
+    numOfRayHit = 0;
+    startTime = GetCurrentTimeSeconds();
+    for (int j = 0; j < numRays; ++j)
+    {
+        float minDist = FLT_MAX;
+        std::vector<Convex2*> candidates;
+        m_symQuadTree.SolveRayResult(rayStartPos[j], rayForwardNormal[j], rayMaxDist[j], m_convexes, candidates);
+        for (int i = 0; i < static_cast<int>(candidates.size()); ++i)
+        {
+            if (candidates[i]->RayCastVsConvex2D(rayRes, rayStartPos[j], rayForwardNormal[j], rayMaxDist[j], true, true))
+            {
+                if (rayRes.m_impactLength < minDist)
+                {
+                    minDist = rayRes.m_impactLength;
+                }
+            }
+        }
+        if (minDist != FLT_MAX)
+        {
+            sumDist += minDist;
+            ++numOfRayHit;
+        }
+    }
+    endTime = GetCurrentTimeSeconds();
+    thisAvgDist = sumDist / static_cast<float>(numOfRayHit);
+    GUARANTEE_OR_DIE(numOfRayHit == correctNumOfRayHit, "QuadTree mismatch");
+    m_lastRayTestSymmetricTreeTime = static_cast<float>((endTime - startTime) * 1000.0);
+
+    // Mode 5: BVH (AABB2Tree)
+    sumDist = 0.f;
+    numOfRayHit = 0;
+    startTime = GetCurrentTimeSeconds();
+    for (int j = 0; j < numRays; ++j)
+    {
+        float minDist = FLT_MAX;
+        std::vector<Convex2*> candidates;
+        m_AABB2Tree.SolveRayResult(rayStartPos[j], rayForwardNormal[j], rayMaxDist[j], candidates);
+        for (int i = 0; i < static_cast<int>(candidates.size()); ++i)
+        {
+            if (candidates[i]->RayCastVsConvex2D(rayRes, rayStartPos[j], rayForwardNormal[j], rayMaxDist[j], true, true))
+            {
+                if (rayRes.m_impactLength < minDist)
+                {
+                    minDist = rayRes.m_impactLength;
+                }
+            }
+        }
+        if (minDist != FLT_MAX)
+        {
+            sumDist += minDist;
+            ++numOfRayHit;
+        }
+    }
+    endTime = GetCurrentTimeSeconds();
+    thisAvgDist = sumDist / static_cast<float>(numOfRayHit);
+    GUARANTEE_OR_DIE(numOfRayHit == correctNumOfRayHit, "BVH mismatch");
+    m_lastRayTestAABBTreeTime = static_cast<float>((endTime - startTime) * 1000.0);
+}
+
+//----------------------------------------------------------------------------------------------------
 void Game::RebuildAllTrees()
 {
-    // Stub for now - will implement spatial structures in later tasks
+    AABB2 totalBounds = AABB2(Vec2(0.f, 0.f), Vec2(WORLD_SIZE_X, WORLD_SIZE_Y));
+
+    int numConvexes = static_cast<int>(m_convexes.size());
+    int bvhDepth = 0;
+    if (numConvexes > 0)
+    {
+        bvhDepth = static_cast<int>(log2(static_cast<double>(numConvexes))) - 3;
+        if (bvhDepth < 3) bvhDepth = 3;
+    }
+
+    m_AABB2Tree.BuildTree(m_convexes, bvhDepth, totalBounds);
+    m_symQuadTree.BuildTree(m_convexes, 4, totalBounds);
 }
 
 //----------------------------------------------------------------------------------------------------

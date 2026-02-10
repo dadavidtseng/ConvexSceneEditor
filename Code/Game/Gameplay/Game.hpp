@@ -7,6 +7,8 @@
 //----------------------------------------------------------------------------------------------------
 #include "Engine/Core/EventSystem.hpp"
 #include "Engine/Math/Vec2.hpp"
+#include "Game/Gameplay/BVH.hpp"
+#include "Game/Gameplay/QuadTree.hpp"
 
 struct Rgba8;
 struct ConvexPoly2;
@@ -87,6 +89,8 @@ private:
     // Rendering helpers
     //------------------------------------------------------------------------------------------------
     void AddVertsForConvexPolyEdges(std::vector<Vertex_PCU>& verts, ConvexPoly2 const& convexPoly2, float thickness, Rgba8 const& color) const;
+    void RenderRaycast(std::vector<Vertex_PCU>& verts) const;
+    void TestRays();
 
     //------------------------------------------------------------------------------------------------
     // Member variables
@@ -104,6 +108,9 @@ private:
     Vec2     m_cursorPrevPos;
     bool     m_isDragging    = false;
     bool     m_drawEdgesMode = false;
+    bool     m_showBoundingDiscs = false;
+    bool     m_showSpatialStructure = false;
+    bool     m_debugDrawBVHMode     = false;
 
     // Random generation
     unsigned int m_seed = 1;
@@ -120,4 +127,8 @@ private:
     float m_lastRayTestAABBRejectionTime = 0.f;
     float m_lastRayTestSymmetricTreeTime = 0.f;
     float m_lastRayTestAABBTreeTime      = 0.f;
+
+    // Spatial structures
+    SymmetricQuadTree m_symQuadTree;
+    AABB2Tree         m_AABB2Tree;
 };
