@@ -103,7 +103,7 @@
   - _Requirements: All requirements (visualization)_
   - _Prompt: Implement the task for spec convex-scene-editor, first run spec-workflow-guide to get the workflow guide then implement the task: Role: C++ Graphics Programmer with expertise in 2D rendering and vertex generation | Task: Implement convex polygon rendering with two distinct visual modes (translucent fill with opaque edges vs composite concave appearance), using vertex generation utilities and distinguishing hovered objects with different colors | Restrictions: Must use existing VertexUtils functions, implement F2 toggle for mode switching, render hovered object distinctly, maintain good performance (< 5ms for 256 objects), use appropriate blend modes, follow existing rendering patterns | _Leverage: Use AddVertsForConvexPoly2D for filled polygons, AddVertsForLineSegment2D for edges, Vertex_PCU for vertex data, Renderer for drawing | Success: Convex polygons render correctly in both modes, Mode A shows translucent fill with opaque edges, Mode B shows composite concave appearance, hovered objects are visually distinct with different color, F2 key toggles between modes smoothly, no z-fighting or visual artifacts, rendering performance is good (< 5ms for 256 objects). After completing implementation, use log-implementation tool to record details with artifacts (functions implemented), then mark task as [x] in tasks.md_
 
-- [ ] 10. Implement debug visualization modes
+- [x] 10. Implement debug visualization modes
   - Files: Code/Game/Gameplay/Game.cpp, Code/Game/Gameplay/Game.hpp
   - F1 key: Toggle bounding disc visualization
   - F4 key: Toggle spatial structure visualization (BVH or QuadTree boxes)
@@ -114,7 +114,7 @@
   - _Requirements: All requirements (debugging and analysis)_
   - _Prompt: Implement the task for spec convex-scene-editor, first run spec-workflow-guide to get the workflow guide then implement the task: Role: C++ Graphics Programmer with expertise in debug visualization and development tools | Task: Implement debug rendering modes for bounding volumes, spatial structure visualization, and convex hull planes, using keyboard toggles and distinct colors for different debug elements | Restrictions: Must use existing VertexUtils functions for debug primitives, implement F1 and F4 toggles, show convex hull planes only when single object in scene, use distinct colors for readability, render debug visuals on top of normal rendering, maintain performance | _Leverage: Use AddVertsForDisc2D for bounding discs, AddVertsForArrow2D for hull plane normals, AddVertsForAABB2 for spatial structure boxes, WasKeyJustPressed for toggles | Success: All debug modes toggle correctly with F1 and F4 keys, bounding discs are visible and accurate when F1 is on, spatial structure boxes are visible when F4 is on, convex hull planes shown as arrows for single object, different colors make debug elements distinguishable, debug rendering doesn't interfere with normal rendering, performance remains good with debug visuals enabled. After completing implementation, use log-implementation tool to record details with artifacts (functions implemented), then mark task as [x] in tasks.md_
 
-- [ ] 11. Implement visible raycast rendering
+- [x] 11. Implement visible raycast rendering
   - Files: Code/Game/Gameplay/Game.cpp, Code/Game/Gameplay/Game.hpp
   - Cast ray from cursor in forward direction (or random direction)
   - Render ray as line segment
@@ -126,7 +126,7 @@
   - _Requirements: All requirements (visualization)_
   - _Prompt: Implement the task for spec convex-scene-editor, first run spec-workflow-guide to get the workflow guide then implement the task: Role: C++ Graphics Programmer with expertise in ray visualization and debugging tools | Task: Implement visible raycast rendering that shows a single ray from cursor, displaying the ray line, impact point, and impact normal with distinct colors for hit vs miss cases | Restrictions: Must cast ray using current optimization mode (selected with F9), render ray line clearly, show impact point and normal only on hit, use distinct colors for hit (e.g., green) vs miss (e.g., red), update ray every frame or on demand, maintain performance | _Leverage: Use AddVertsForLineSegment2D for ray line, AddVertsForDisc2D for impact point, AddVertsForArrow2D for impact normal, Camera::ClientToWorld for ray origin, Convex2::RayCastVsConvex2D for ray testing | Success: Ray is visible and updates with cursor or on demand, ray line is clearly rendered, impact point is shown correctly on hit, impact normal is shown as arrow on hit, visual distinction between hit (green) and miss (red) is clear, ray uses current optimization mode, rendering is smooth and responsive. After completing implementation, use log-implementation tool to record details with artifacts (functions implemented), then mark task as [x] in tasks.md_
 
-- [ ] 12. Implement AABB2Tree (BVH) tree building
+- [x] 12. Implement AABB2Tree (BVH) tree building
   - Files: Code/Game/BVH.hpp, Code/Game/BVH.cpp
   - Create AABB2TreeNode structure with bounds and convex array
   - Implement AABB2Tree class with BuildTree method
@@ -137,7 +137,7 @@
   - _Requirements: All requirements (spatial partitioning for performance)_
   - _Prompt: Implement the task for spec convex-scene-editor, first run spec-workflow-guide to get the workflow guide then implement the task: Role: C++ Developer with expertise in spatial data structures and binary trees | Task: Implement BVH (Bounding Volume Hierarchy) tree construction with alternating axis splits following the design document's algorithm, calculating appropriate tree depth and partitioning objects based on their bounding disc centers | Restrictions: Must follow binary tree structure with alternating vertical/horizontal splits, ensure proper parent-child relationships, maintain tree depth formula (log2(N)-3, min 3), do not create unbalanced trees | _Leverage: Use AABB2 for node bounds, Convex2::m_boundingDiscCenter for partitioning decisions | Success: Tree builds correctly with proper depth calculation, nodes have correct bounding boxes that contain all child objects, objects are properly distributed across leaf nodes, parent-child index relationships are correct, tree structure is balanced. After completing implementation, use log-implementation tool to record details with artifacts (classes and data structures created), then mark task as [x] in tasks.md_
 
-- [ ] 13. Implement AABB2Tree ray query
+- [x] 13. Implement AABB2Tree ray query
   - Files: Code/Game/BVH.cpp, Code/Game/BVH.hpp
   - Implement SolveRayResult method for ray queries
   - Add depth-first traversal with AABB intersection tests
@@ -147,7 +147,7 @@
   - _Requirements: All requirements (spatial partitioning for performance)_
   - _Prompt: Implement the task for spec convex-scene-editor, first run spec-workflow-guide to get the workflow guide then implement the task: Role: C++ Developer with expertise in tree traversal algorithms and ray-casting optimization | Task: Implement ray query functionality for BVH tree with depth-first traversal, using AABB intersection tests to prune non-intersecting branches and return candidate convex shapes | Restrictions: Must traverse tree efficiently, skip non-intersecting nodes early, maintain correct parent-child navigation, do not test convex shapes directly (return candidates only) | _Leverage: Use RaycastVsAABB2D for node intersection tests, traverse tree structure built in task 12 | Success: Ray queries return correct candidate set without false negatives, traversal correctly skips non-intersecting nodes, performance improvement over brute force is measurable (at least 2x faster for 256+ objects), GetParentIndex works correctly. After completing implementation, use log-implementation tool to record details with artifacts (functions implemented), then mark task as [x] in tasks.md_
 
-- [ ] 14. Implement SymmetricQuadTree tree building
+- [x] 14. Implement SymmetricQuadTree tree building
   - Files: Code/Game/QuadTree.hpp, Code/Game/QuadTree.cpp
   - Create SymmetricQuadTreeNode structure with bounds and convex array
   - Implement SymmetricQuadTree class with BuildTree method
@@ -158,7 +158,7 @@
   - _Requirements: All requirements (spatial partitioning for performance)_
   - _Prompt: Implement the task for spec convex-scene-editor, first run spec-workflow-guide to get the workflow guide then implement the task: Role: C++ Developer with expertise in spatial data structures and quad trees | Task: Implement QuadTree spatial partitioning with uniform 4-way subdivision at fixed depth of 4 levels, assigning objects to leaf nodes based on AABB overlap tests | Restrictions: Must use exactly 4 levels depth (hardcoded), divide space into equal quadrants, assign objects to ALL overlapping leaf nodes, implement helper methods for child index calculation | _Leverage: Use AABB2 for node bounds, DoAABB2sOverlap2D for overlap tests, Convex2::m_boundingAABB for object bounds | Success: Tree builds with exactly 4 levels, nodes divide space into equal quadrants, objects are assigned to all overlapping leaf nodes (may appear in multiple nodes), helper methods (GetFirstLBChild, GetSecondRBChild, GetThirdLTChild, GetForthRTChild, GetParentIndex) work correctly. After completing implementation, use log-implementation tool to record details with artifacts (classes and data structures created), then mark task as [x] in tasks.md_
 
-- [ ] 15. Implement SymmetricQuadTree ray query with deduplication
+- [x] 15. Implement SymmetricQuadTree ray query with deduplication
   - Files: Code/Game/QuadTree.cpp, Code/Game/QuadTree.hpp
   - Implement SolveRayResult method for ray queries
   - Traverse tree and test ray-AABB intersections
@@ -168,7 +168,7 @@
   - _Requirements: All requirements (spatial partitioning for performance)_
   - _Prompt: Implement the task for spec convex-scene-editor, first run spec-workflow-guide to get the workflow guide then implement the task: Role: C++ Developer with expertise in tree traversal and deduplication algorithms | Task: Implement ray query functionality for QuadTree with deduplication mechanism using per-object flags to prevent duplicate candidate returns when objects span multiple leaf nodes | Restrictions: Must traverse tree efficiently, use flag-based deduplication (not set-based), reset all flags after query, handle objects appearing in multiple leaf nodes correctly | _Leverage: Use RaycastVsAABB2D for node intersection tests, Convex2::m_symmetricQuadTreeFlag for deduplication | Success: Ray queries return correct candidate set without duplicates, deduplication flag mechanism works correctly, flags are properly reset after each query, performance improvement over brute force is measurable. After completing implementation, use log-implementation tool to record details with artifacts (functions implemented), then mark task as [x] in tasks.md_
 
-- [ ] 16. Implement batch raycast performance testing
+- [x] 16. Implement batch raycast performance testing
   - Files: Code/Game/Gameplay/Game.cpp, Code/Game/Gameplay/Game.hpp
   - Implement TestRays method
   - Generate 1024 random rays across world bounds
@@ -180,7 +180,7 @@
   - _Requirements: All requirements (performance analysis)_
   - _Prompt: Implement the task for spec convex-scene-editor, first run spec-workflow-guide to get the workflow guide then implement the task: Role: C++ Performance Engineer with expertise in benchmarking and optimization analysis | Task: Implement comprehensive batch raycast testing system that measures and compares performance across 5 different optimization strategies, generating random rays and timing each approach | Restrictions: Must use high-precision timing, generate truly random rays across world bounds, test all convex objects for each ray, store timing results for UI display, ensure fair comparison (same rays for all modes) | _Leverage: Use GetCurrentTimeSeconds for timing, GetRandomPointInAABB2D for ray generation, Convex2::RayCastVsConvex2D with different optimization flags, spatial structure query methods | Success: All 5 optimization modes are tested with identical ray sets, timing measurements are accurate (milliseconds precision), results show expected performance hierarchy (spatial structures faster than brute force), test completes in reasonable time (< 5 seconds for 1024 rays × 256 objects), results are stored for UI display. After completing implementation, use log-implementation tool to record details with artifacts (functions implemented), then mark task as [x] in tasks.md_
 
-- [ ] 17. Implement performance metrics UI display
+- [x] 17. Implement performance metrics UI display
   - Files: Code/Game/Gameplay/Game.cpp, Code/Game/Gameplay/Game.hpp
   - Display FPS in top-left corner
   - Display raycast timing for all 5 modes
