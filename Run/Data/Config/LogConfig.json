@@ -1,0 +1,15 @@
+{
+  "logFilePath": "Logs/ProtogameJS3D.log",
+  "enableConsole": true,
+  "enableFile": true,
+  "enableDebugOut": true,
+  "enableOnScreen": true,
+  "enableDevConsole": true,
+  "asyncLogging": true,
+  "maxLogEntries": 50000,
+  "timestampEnabled": true,
+  "threadIdEnabled": true,
+  "autoFlush": false,
+  "enableSmartRotation": true,
+  "rotationConfigPath": "Data/Config/LogRotation.json"
+}

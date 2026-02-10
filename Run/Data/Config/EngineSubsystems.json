@@ -1,0 +1,148 @@
+{
+    "_comment": "Engine Subsystems Configuration - Controls which subsystems are initialized during engine startup",
+    "_usage": {
+        "core_subsystems": "Remove subsystem name from 'core.subsystems' array to disable it",
+        "optional_subsystems": "Set 'enabled: false' in subsystem config to disable it",
+        "defaults": "If this file is missing or malformed, all subsystems default to enabled"
+    },
+
+    "subsystems": {
+        "audio": {
+            "enabled": true,
+            "description": "Audio subsystem using FMOD for sound playback and 3D audio",
+            "config": {
+                "_note": "sAudioSystemConfig currently has no fields - reserved for future expansion",
+                "maxChannels": 128
+            }
+        },
+        "input": {
+            "enabled": true,
+            "description": "Input subsystem for keyboard, mouse, and gamepad input handling",
+            "config": {
+                "_note": "sInputSystemConfig currently has no fields - reserved for future expansion",
+                "enableController": true,
+                "enableMouse": true,
+                "enableKeyboard": true
+            }
+        },
+        "math": {
+            "enabled": true,
+            "description": "Math utilities including RandomNumberGenerator for procedural generation",
+            "config": {
+                "_note": "Set defaultSeed to a number for deterministic random generation, or null for time-based seed",
+                "defaultSeed": null
+            }
+        },
+        "network": {
+            "enabled": false,
+            "description": "Network subsystem for multiplayer and network communication (not yet implemented)",
+            "config": {
+                "_note": "NetworkTCPSubsystem exists but not yet integrated into GEngine::Construct()"
+            }
+        },
+        "platform": {
+            "enabled": true,
+            "description": "Platform abstraction layer (Window configuration)",
+            "config": {
+                "_note": "Window configuration is ACTIVELY READ from this config (Engine.cpp lines 265-294)",
+                "windowType": "WINDOWED",
+                "aspectRatio": 2.0,
+                "windowTitle": "ConvexSceneEditor",
+                "_available_windowTypes": [
+                    "WINDOWED",
+                    "BORDERLESS",
+                    "FULLSCREEN_LETTERBOX",
+                    "FULLSCREEN_STRETCH",
+                    "FULLSCREEN_CROP",
+                    "MINIMIZED",
+                    "HIDDEN"
+                ]
+            }
+        },
+        "renderer": {
+            "enabled": true,
+            "description": "Rendering subsystem using DirectX 11 (configured in core.subsystems)",
+            "config": {
+                "_note": "Renderer configuration is currently hardcoded in Engine.cpp lines 287-290"
+            }
+        },
+        "resource": {
+            "enabled": true,
+            "description": "Resource management and asset loading (configured in core.subsystems as ResourceSubsystem)",
+            "config": {
+                "_note": "ResourceSubsystem threadCount is currently hardcoded to 4 in Engine.cpp line 337",
+                "_hardcoded_values": {
+                    "threadCount": 4
+                }
+            }
+        },
+        "script": {
+            "enabled": false,
+            "description": "Script subsystem using V8 JavaScript engine for dual-language game logic",
+            "config": {
+                "_note": "All script settings are ACTIVELY READ from this config (Engine.cpp lines 399-410)",
+                "enableDebugging": true,
+                "heapSizeLimit": 256,
+                "enableConsoleOutput": true,
+                "enableHotReload": true,
+                "enableInspector": true,
+                "inspectorPort": 9229,
+                "inspectorHost": "127.0.0.1",
+                "waitForDebugger": false
+            }
+        }
+    },
+
+    "core": {
+        "description": "Core subsystems - Remove from array to disable. Warning: Disabling core subsystems may cause crashes if dependent systems are enabled.",
+        "_configuration_notes": {
+            "LogSubsystem": "Uses separate LogConfig.json file for detailed configuration",
+            "EventSystem": "No configurable options (uses empty sEventSystemConfig struct)",
+            "JobSystem": "Thread count auto-calculated: (CPU_cores - 2) generic threads + 1 I/O thread (Engine.cpp lines 191-200)",
+            "Window": "FULLY CONFIGURABLE via subsystems.platform.config (windowType, aspectRatio, windowTitle)",
+            "Renderer": "Hardcoded: Uses Window reference",
+          "ImGuiSubsystem": "Hardcoded: Uses Renderer and Window references - DevConsole-aware input capture",
+            "DevConsole": "Hardcoded: Uses 'DaemonFont' font",
+            "ResourceSubsystem": "Hardcoded: 4 worker threads"
+        },
+        "dependencies": {
+            "LogSubsystem": "None - Can be safely disabled",
+            "EventSystem": "Required by most game systems",
+            "JobSystem": "Required by ResourceSubsystem",
+          "Window": "Required by Renderer, InputSystem, ImGuiSubsystem",
+          "Renderer": "Required by DevConsole, ResourceSubsystem, DebugRenderSystem, ImGuiSubsystem",
+          "ImGuiSubsystem": "Requires Renderer, Window - Provides debug UI with DevConsole integration",
+            "DevConsole": "Requires Renderer - Can be safely disabled",
+            "ResourceSubsystem": "Requires Renderer, JobSystem"
+        },
+        "subsystems": [
+            "LogSubsystem",
+            "EventSystem",
+            "JobSystem",
+            "Window",
+            "Renderer",
+          "ImGuiSubsystem",
+            "DevConsole",
+            "ResourceSubsystem"
+        ]
+    },
+
+    "_examples": {
+        "_configuration_status": {
+            "fully_configurable": ["script (8 settings)", "math (defaultSeed)", "platform/window (3 settings)"],
+            "future_expansion": ["audio", "input"],
+            "currently_hardcoded": ["renderer", "resource", "devConsole", "jobSystem"]
+        },
+        "disable_audio": "Set subsystems.audio.enabled to false",
+        "disable_logging": "Remove 'LogSubsystem' from core.subsystems array",
+        "disable_dev_console": "Remove 'DevConsole' from core.subsystems array",
+      "disable_imgui": "Remove 'ImGuiSubsystem' from core.subsystems array (disables debug UI)",
+        "headless_mode": "Remove 'Window' and 'Renderer' from core.subsystems array (experimental)",
+        "custom_rng_seed": "Set subsystems.math.config.defaultSeed to a number (e.g., 12345) for deterministic randomness",
+        "disable_debugger": "Set subsystems.script.config.enableInspector to false",
+        "change_inspector_port": "Set subsystems.script.config.inspectorPort to desired port number",
+        "fullscreen_mode": "Set subsystems.platform.config.windowType to 'FULLSCREEN_CROP' or 'FULLSCREEN_LETTERBOX'",
+        "windowed_mode": "Set subsystems.platform.config.windowType to 'WINDOWED'",
+        "change_window_title": "Set subsystems.platform.config.windowTitle to your desired title"
+    }
+}

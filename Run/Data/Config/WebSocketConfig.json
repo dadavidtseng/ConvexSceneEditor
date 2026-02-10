@@ -1,0 +1,17 @@
+{
+  "chromeDevTools": {
+    "enabled": true,
+    "host": "127.0.0.1",
+    "port": 9229,
+    "contextName": "Protogame3D JavaScript Context",
+    "maxConnections": 10,
+    "enableLogging": true
+  },
+  "mcp": {
+    "enabled": false,
+    "host": "127.0.0.1",
+    "port": 3000,
+    "maxConnections": 10,
+    "enableLogging": true
+  }
+}

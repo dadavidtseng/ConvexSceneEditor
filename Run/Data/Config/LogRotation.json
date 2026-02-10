@@ -1,0 +1,14 @@
+{
+  "maxFileSizeMB": 100,
+  "maxTimeIntervalHours": 2,
+  "logDirectory": "Logs",
+  "currentLogName": "latest.log",
+  "sessionPrefix": "session",
+  "organizeDateFolders": true,
+  "retentionDays": 30,
+  "maxArchivedFiles": 200,
+  "maxTotalArchiveSizeMB": 500,
+  "diskSpaceWarningGB": 5.0,
+  "diskSpaceCriticalGB": 2.0,
+  "diskSpaceEmergencyGB": 0.5
+}
