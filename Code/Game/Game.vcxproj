@@ -323,7 +323,9 @@
     <ClCompile Include="Framework/GameCommon.cpp" />
     <ClCompile Include="Framework/Main_Windows.cpp" />
     <ClCompile Include="Gameplay/Game.cpp" />
+    <ClCompile Include="Gameplay\BVH.cpp" />
     <ClCompile Include="Gameplay\Convex.cpp" />
+    <ClCompile Include="Gameplay\QuadTree.cpp" />
   </ItemGroup>
   <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
   <!-- Header Files -->
@@ -333,7 +335,9 @@
     <ClInclude Include="Framework/App.hpp" />
     <ClInclude Include="Framework/GameCommon.hpp" />
     <ClInclude Include="Gameplay/Game.hpp" />
+    <ClInclude Include="Gameplay\BVH.hpp" />
     <ClInclude Include="Gameplay\Convex.hpp" />
+    <ClInclude Include="Gameplay\QuadTree.hpp" />
   </ItemGroup>
   <!-- //////////////////////////////////////////////////////////////////////////////////////////////// -->
   <!-- Documentation -->
