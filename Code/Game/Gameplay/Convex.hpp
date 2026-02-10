@@ -44,6 +44,7 @@ public:
 	void Rotate(float degrees, Vec2 const& refPoint = Vec2(0.f, 0.f));
 	void Scale(float scaleFactor, Vec2 const& refPoint = Vec2(0.f, 0.f));
 	void RebuildBoundingBox();
+	void RebuildBoundingVolumes();
 
 	//------------------------------------------------------------------------------------------------
 	// Data Members

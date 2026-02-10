@@ -23,6 +23,7 @@ Convex2::Convex2(ConvexPoly2 const& convexPoly2)
 	: m_convexPoly(convexPoly2)
 	, m_convexHull(convexPoly2)
 {
+	RebuildBoundingVolumes();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -32,6 +33,7 @@ Convex2::Convex2(ConvexHull2 const& convexHull2)
 	: m_convexHull(convexHull2)
 	, m_convexPoly(convexHull2)
 {
+	RebuildBoundingVolumes();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -41,6 +43,7 @@ Convex2::Convex2(std::vector<Vec2> const& vertices)
 	: m_convexPoly(ConvexPoly2(vertices))
 	, m_convexHull(ConvexHull2(m_convexPoly))
 {
+	RebuildBoundingVolumes();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -130,6 +133,36 @@ void Convex2::RebuildBoundingBox()
 }
 
 //----------------------------------------------------------------------------------------------------
+// RebuildBoundingVolumes - Recalculate both AABB and bounding disc from current vertices
+//----------------------------------------------------------------------------------------------------
+void Convex2::RebuildBoundingVolumes()
+{
+	RebuildBoundingBox();
+
+	// Compute bounding disc center as centroid of vertices
+	std::vector<Vec2> const& verts = m_convexPoly.GetVertexArray();
+	Vec2 center = Vec2(0.f, 0.f);
+	for (auto const& vert : verts)
+	{
+		center += vert;
+	}
+	center /= static_cast<float>(verts.size());
+	m_boundingDiscCenter = center;
+
+	// Compute bounding disc radius as max distance from center to any vertex
+	float maxRadiusSq = 0.f;
+	for (auto const& vert : verts)
+	{
+		float distSq = (vert - center).GetLengthSquared();
+		if (distSq > maxRadiusSq)
+		{
+			maxRadiusSq = distSq;
+		}
+	}
+	m_boundingRadius = sqrtf(maxRadiusSq);
+}
+
+//----------------------------------------------------------------------------------------------------
 // IsPointInside - Test if a point is inside the convex polygon
 //----------------------------------------------------------------------------------------------------
 bool Convex2::IsPointInside(Vec2 const& point) const
@@ -145,6 +178,19 @@ bool Convex2::RayCastVsConvex2D(RaycastResult2D& out_rayCastRes, Vec2 const& sta
 	// Optional: Broad-phase disc rejection
 	if (discRejection)
 	{
+		// Check if ray starts inside the bounding disc (our engine's RaycastVsDisc2D
+		// returns m_didImpact=false for this case, so we must handle it explicitly)
+		Vec2 startToCenter = m_boundingDiscCenter - startPos;
+		float distSqToCenter = startToCenter.GetLengthSquared();
+		bool startInsideDisc = (distSqToCenter < m_boundingRadius * m_boundingRadius);
+
+		if (startInsideDisc)
+		{
+			// Ray starts inside bounding disc, must test narrow-phase
+			out_rayCastRes = RaycastVsConvexHull2D(startPos, forwardNormal, maxDist, m_convexHull);
+			return out_rayCastRes.m_didImpact;
+		}
+
 		RaycastResult2D discResult = RaycastVsDisc2D(startPos, forwardNormal, maxDist, m_boundingDiscCenter, m_boundingRadius);
 		if (discResult.m_didImpact)
 		{
@@ -152,7 +198,7 @@ bool Convex2::RayCastVsConvex2D(RaycastResult2D& out_rayCastRes, Vec2 const& sta
 			out_rayCastRes = RaycastVsConvexHull2D(startPos, forwardNormal, maxDist, m_convexHull);
 			return out_rayCastRes.m_didImpact;
 		}
-		// Disc miss, early exit
+		// Disc miss and ray starts outside, safe to reject
 		out_rayCastRes.m_didImpact = false;
 		return false;
 	}
