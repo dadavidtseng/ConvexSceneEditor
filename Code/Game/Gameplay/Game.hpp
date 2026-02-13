@@ -111,6 +111,7 @@ private:
     bool     m_showBoundingDiscs = false;
     bool     m_showSpatialStructure = false;
     bool     m_debugDrawBVHMode     = false;
+    int      m_rayOptimizationMode = 0; // 0=None, 1=Disc, 2=AABB
 
     // Random generation
     unsigned int m_seed = 1;

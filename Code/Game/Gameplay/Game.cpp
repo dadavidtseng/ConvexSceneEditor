@@ -114,7 +114,8 @@ void Game::Update()
     DebugAddScreenText(Stringf("Time: %.2f FPS: %.2f Scale: %.1f", m_gameClock->GetTotalSeconds(), 1.f / m_gameClock->GetDeltaSeconds(), m_gameClock->GetTimeScale()), screenTopLeft - Vec2(0.f, textHeight * static_cast<float>(lineIndex)), textHeight, Vec2(1, 1), 0.f);
     ++lineIndex;
 
-    DebugAddScreenText(Stringf("LMB/RMB=RayStart/End, W/R=Rotate, L/K=Scale, F1=Discs, F3=BVH, F4=AABB, F2=DrawMode, F8=Randomize"), screenTopLeft - Vec2(0.f, textHeight * static_cast<float>(lineIndex)), textHeight, Vec2(1, 1), 0.f);
+    char const* optModeNames[] = {"None", "Disc", "AABB"};
+    DebugAddScreenText(Stringf("LMB/RMB=RayStart/End, W/R=Rotate, L/K=Scale, F1=Discs, F3=BVH, F4=AABB, F2=DrawMode, F8=Randomize, F9=Opt(%s)", optModeNames[m_rayOptimizationMode]), screenTopLeft - Vec2(0.f, textHeight * static_cast<float>(lineIndex)), textHeight, Vec2(1, 1), 0.f);
     ++lineIndex;
 
     DebugAddScreenText(Stringf("%d convex shapes (Y/U to double/halve); T=Test with %d random rays (M/N to double/halve)", static_cast<int>(m_convexes.size()), m_numOfRandomRays), screenTopLeft - Vec2(0.f, textHeight * static_cast<float>(lineIndex)), textHeight, Vec2(1, 1), 0.f);
@@ -355,6 +356,10 @@ void Game::UpdateGame()
         else if (g_input->WasKeyJustPressed(KEYCODE_F4))
         {
             m_showSpatialStructure = !m_showSpatialStructure;
+        }
+        else if (g_input->WasKeyJustPressed(KEYCODE_F9))
+        {
+            m_rayOptimizationMode = (m_rayOptimizationMode + 1) % 3;
         }
         else if (g_input->WasKeyJustPressed('C'))
         {
@@ -630,7 +635,9 @@ void Game::RenderRaycast(std::vector<Vertex_PCU>& verts) const
     for (Convex2* convex : m_convexes)
     {
         RaycastResult2D result;
-        bool didHit = convex->RayCastVsConvex2D(result, m_rayStart, rayNormal, rayMaxLength);
+        bool discRejection = (m_rayOptimizationMode == 1);
+        bool boxRejection  = (m_rayOptimizationMode == 2);
+        bool didHit = convex->RayCastVsConvex2D(result, m_rayStart, rayNormal, rayMaxLength, discRejection, boxRejection);
         if (didHit && (!closestResult.m_didImpact || result.m_impactLength < closestResult.m_impactLength))
         {
             closestResult = result;
