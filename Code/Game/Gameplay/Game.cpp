@@ -325,7 +325,20 @@ void Game::UpdateGame()
         }
         else if (g_input->WasKeyJustPressed(KEYCODE_F8))
         {
-            g_app->DeleteAndCreateNewGame();
+            // Re-randomize all shapes, keeping current count
+            int numShapes = static_cast<int>(m_convexes.size());
+            ClearScene();
+            m_seed += 1;
+            for (int i = 0; i < numShapes; ++i)
+            {
+                Vec2 randomPos = Vec2(
+                    g_rng->RollRandomFloatInRange(0.f, WORLD_SIZE_X),
+                    g_rng->RollRandomFloatInRange(0.f, WORLD_SIZE_Y)
+                );
+                Convex2* convex = CreateRandomConvex(randomPos, MIN_CONVEX_RADIUS, MAX_CONVEX_RADIUS);
+                m_convexes.push_back(convex);
+            }
+            RebuildAllTrees();
         }
         else if (g_input->WasKeyJustPressed(KEYCODE_F1))
         {
