@@ -565,18 +565,7 @@ void Game::RenderGame() const
         }
     }
 
-    // Single object mode: show convex hull planes as arrows
-    if (m_convexes.size() == 1)
-    {
-        Convex2 const* convex = m_convexes[0];
-        ConvexHull2 const& hull = convex->m_convexHull;
-        for (Plane2 const& plane : hull.m_boundingPlanes)
-        {
-            Vec2 pointOnPlane = plane.m_normal * plane.m_distanceFromOrigin;
-            Vec2 arrowEnd = pointOnPlane + plane.m_normal * 3.f;
-            AddVertsForArrow2D(verts, pointOnPlane, arrowEnd, 1.f, 0.3f, Rgba8(255, 255, 0));
-        }
-    }
+    // Single object mode: infinite plane lines are drawn inside RenderRaycast
     
     // Raycast visualization (always visible)
     RenderRaycast(verts);
@@ -649,6 +638,50 @@ void Game::RenderRaycast(std::vector<Vertex_PCU>& verts) const
         // Red impact normal arrow
         Vec2 normalEnd = impactPos + impactNormal * normalLength;
         AddVertsForArrow2D(verts, impactPos, normalEnd, normalArrowSize, normalThickness, Rgba8(255, 0, 0));
+    }
+
+    // Single object mode: draw infinite lines for each bounding plane, color-coded by status/rejection
+    if (m_convexes.size() == 1)
+    {
+        for (auto const& plane : m_convexes[0]->m_convexHull.m_boundingPlanes)
+        {
+            float altitude = plane.GetAltitudeOfPoint(m_rayStart);
+            float NdotF    = DotProduct2D(rayNormal, plane.m_normal);
+
+            Vec2 vert1 = plane.GetOriginPoint() + 1000.f * plane.m_normal.GetRotated90Degrees();
+            Vec2 vert2 = plane.GetOriginPoint() - 1000.f * plane.m_normal.GetRotated90Degrees();
+
+            if (altitude > 0.f && NdotF < 0.f)
+            {
+                // Entry candidate: ray outside, facing toward plane (magenta)
+                AddVertsForLineSegment2D(verts, vert1, vert2, 0.2f, false, Rgba8(255, 0, 255));
+
+                // Draw filled disc at ray-plane intersection
+                float SdotN = DotProduct2D(m_rayStart, plane.m_normal);
+                float dist  = (plane.m_distanceFromOrigin - SdotN) / NdotF;
+                AddVertsForDisc2D(verts, m_rayStart + dist * rayNormal, 0.5f, Rgba8(255, 0, 255));
+            }
+            else if (altitude > 0.f && NdotF >= 0.f)
+            {
+                // Rejected: ray outside, facing away/parallel — can never enter (red)
+                AddVertsForLineSegment2D(verts, vert1, vert2, 0.2f, false, Rgba8(255, 0, 0));
+            }
+            else if (altitude <= 0.f && NdotF < 0.f)
+            {
+                // Already inside, moving deeper — past this boundary (green)
+                AddVertsForLineSegment2D(verts, vert1, vert2, 0.2f, false, Rgba8(0, 255, 0));
+            }
+            else
+            {
+                // Exit candidate: ray inside, facing away from plane (cyan)
+                AddVertsForLineSegment2D(verts, vert1, vert2, 0.2f, false, Rgba8(0, 255, 255));
+
+                // Draw filled disc at ray-plane exit intersection
+                float SdotN = DotProduct2D(m_rayStart, plane.m_normal);
+                float dist  = (plane.m_distanceFromOrigin - SdotN) / NdotF;
+                AddVertsForDisc2D(verts, m_rayStart + dist * rayNormal, 0.5f, Rgba8(0, 255, 255));
+            }
+        }
     }
 }
 
