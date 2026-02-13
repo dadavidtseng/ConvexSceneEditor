@@ -306,14 +306,17 @@ void Game::UpdateGame()
         // Update hover detection (skipped during drag for sticky focus)
         UpdateHoverDetection();
 
-        // Update ray endpoints via mouse buttons or keyboard
-        if (g_input->IsKeyDown(KEYCODE_LEFT_MOUSE))
+        // Update ray endpoints via mouse buttons (only when not hovering a convex)
+        if (!m_hoveringConvex)
         {
-            m_rayStart = cursorPos;
-        }
-        if (g_input->IsKeyDown(KEYCODE_RIGHT_MOUSE))
-        {
-            m_rayEnd = cursorPos;
+            if (g_input->IsKeyDown(KEYCODE_LEFT_MOUSE))
+            {
+                m_rayStart = cursorPos;
+            }
+            if (g_input->IsKeyDown(KEYCODE_RIGHT_MOUSE))
+            {
+                m_rayEnd = cursorPos;
+            }
         }
 
         if (g_input->WasKeyJustPressed(KEYCODE_ESC))
