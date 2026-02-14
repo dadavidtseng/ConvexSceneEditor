@@ -9,6 +9,9 @@
 #include "Engine/Math/Vec2.hpp"
 #include "Game/Gameplay/BVH.hpp"
 #include "Game/Gameplay/QuadTree.hpp"
+//----------------------------------------------------------------------------------------------------
+#include <cstdint>
+#include <vector>
 
 struct Rgba8;
 struct ConvexPoly2;
@@ -24,6 +27,14 @@ enum class eGameState : int8_t
 {
     ATTRACT,
     GAME
+};
+
+//----------------------------------------------------------------------------------------------------
+struct UnrecognizedChunk
+{
+    uint8_t              chunkType;
+    uint8_t              endianness;
+    std::vector<uint8_t> rawData; // Complete chunk bytes (header + data + footer)
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -55,6 +66,8 @@ private:
     // Game state
     //------------------------------------------------------------------------------------------------
     static bool OnGameStateChanged(EventArgs& args);
+    static bool SaveConvexSceneCommand(EventArgs& args);
+    static bool LoadConvexSceneCommand(EventArgs& args);
 
     //------------------------------------------------------------------------------------------------
     // Update
@@ -91,6 +104,17 @@ private:
     void AddVertsForConvexPolyEdges(std::vector<Vertex_PCU>& verts, ConvexPoly2 const& convexPoly2, float thickness, Rgba8 const& color) const;
     void RenderRaycast(std::vector<Vertex_PCU>& verts) const;
     void TestRays();
+
+    //------------------------------------------------------------------------------------------------
+    // Binary test validation
+    //------------------------------------------------------------------------------------------------
+    void ValidateTestBinary();
+
+    //------------------------------------------------------------------------------------------------
+    // GHCS Save/Load
+    //------------------------------------------------------------------------------------------------
+    bool SaveSceneToFile(std::string const& filePath);
+    bool LoadSceneFromFile(std::string const& filePath);
 
     //------------------------------------------------------------------------------------------------
     // Member variables
@@ -132,4 +156,12 @@ private:
     // Spatial structures
     SymmetricQuadTree m_symQuadTree;
     AABB2Tree         m_AABB2Tree;
+
+    // Loaded scene state (for letterbox/pillarbox rendering)
+    AABB2 m_loadedSceneBounds;
+    bool  m_hasLoadedScene = false;
+
+    // Unrecognized chunk preservation
+    std::vector<UnrecognizedChunk> m_preservedChunks;
+    bool m_sceneModified = false;
 };

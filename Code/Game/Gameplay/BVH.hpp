@@ -29,6 +29,9 @@ public:
 
 	std::vector<AABB2TreeNode> m_nodes;
 
+	int  GetStartOfLastLevel() const { return m_startOfLastLevel; }
+	void SetStartOfLastLevel(int value) { m_startOfLastLevel = value; }
+
 protected:
 	int GetParentIndex(int index);
 	int m_startOfLastLevel = 0;

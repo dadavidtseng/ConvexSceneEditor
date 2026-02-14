@@ -238,6 +238,7 @@ docs/_build/
 
 Run/Logs
 Run/Saves
+Run/Data/Scenes
 .claude
 .serena
 .spec-workflow
